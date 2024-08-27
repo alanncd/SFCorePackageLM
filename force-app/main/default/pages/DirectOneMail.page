@@ -1,0 +1,14 @@
+<apex:page controller="AddLicenseController">
+    <style>
+        iframe {
+            padding-top: 30px !important; 
+        }
+            
+    
+    </style>
+    
+     
+    <apex:iframe scrolling="true" id="addLicense" src="{!URLENCODE(leftMainUrl) + '/DirectOneMailSystems?orgId=' + URLENCODE(orgId)}" />
+
+     
+</apex:page>
