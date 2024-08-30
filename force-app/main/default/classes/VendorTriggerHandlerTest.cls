@@ -3,6 +3,7 @@ private class VendorTriggerHandlerTest {
     
 	@isTest
     static void testUpdateVendor(){ 
+        System.debug('test');
         VendorTriggerSetting__c vendorTriggerInstance = VendorTriggerSetting__c.getOrgDefaults();
         vendorTriggerInstance.Activate_Trigger__c = true;
         vendorTriggerInstance.SetupOwnerId = UserInfo.getOrganizationId(); 

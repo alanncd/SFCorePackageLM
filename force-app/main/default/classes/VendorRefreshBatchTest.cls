@@ -3,7 +3,7 @@ public class VendorRefreshBatchTest {
     
     @isTest
     private static void refreshUpdateVendor(){
-        
+        System.debug('test');
         List<Lead> leadList = new List<Lead>();
         leadList.add(new Lead(LeadSource='Facebook',LastName='Test',Next_Step__c='Test'));
         leadList.add(new Lead(LeadSource='Facebook',LastName='Test12',Next_Step__c='Test'));

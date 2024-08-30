@@ -89,9 +89,7 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
         String vendorName = String.isNotBlank(vendor.Vendor_Lead_Source__c)
           ? vendor.Vendor_Lead_Source__c.toLowerCase()
           : vendor.Name.toLowerCase();
-        // find Lead, Opportunities and Transactions Count
         if (vendor.Duration__c == 'Monthly') {
-          // ======= Monthly Leads Count ============= //
           if (leadsMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getMonthlyRecordCount(
               leadsMap.get(vendorName),
@@ -102,7 +100,6 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
               flag = true;
             }
           }
-          // ======= Monthly Opportunities Count ============= //
           if (opportunityMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getMonthlyRecordCount(
               opportunityMap.get(vendorName),
@@ -114,7 +111,6 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
             }
           }
 
-          // ======= Monthly Transactions Count ============= //
           if (transactionMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getMonthlyRecordCount(
               transactionMap.get(vendorName),
@@ -127,7 +123,6 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
             }
           }
         } else if (vendor.Duration__c == 'Quarterly') {
-          // ======= Quarterly Leads Count ============= //
           if (leadsMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getQuarterlyRecordCount(
               currentQuarter.Number,
@@ -140,7 +135,6 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
             }
           }
 
-          // ======= Quarterly Opportunities Count ============= //
           if (opportunityMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getQuarterlyRecordCount(
               currentQuarter.Number,
@@ -152,7 +146,7 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
               flag = true;
             }
           }
-          // ======= Quarterly Transactions Count ============= //
+
           if (transactionMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getQuarterlyRecordCount(
               currentQuarter.Number,
@@ -166,7 +160,7 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
             }
           }
         } else if (vendor.Duration__c == 'Yearly') {
-          // ======= Yearly Leads Count ============= //
+
           if (leadsMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getYearlyRecordCount(
               leadsMap.get(vendorName),
@@ -177,7 +171,7 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
               flag = true;
             }
           }
-          // ======= Yearly Opportunities Count ============= //
+
           if (opportunityMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getYearlyRecordCount(
               opportunityMap.get(vendorName),
@@ -189,7 +183,6 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
             }
           }
 
-          // ======= Yearly Transactions Count ============= //
           if (transactionMap.containsKey(vendorName)) {
             VendorTriggerHandler.RecordWrapper record = VendorTriggerHandler.getYearlyRecordCount(
               transactionMap.get(vendorName),
@@ -255,7 +248,7 @@ public with sharing class VendorRefreshBatch implements Database.Batchable<sObje
       );
 
       SObjectAccessDecision decision2 = Security.stripInaccessible(AccessType.UPDATABLE, vendorListToUpdate);
-      List<Database.SaveResult> myResult = Database.update(vendorListToUpdate = decision2.getRecords());
+      List<Database.SaveResult> myResult = Database.update(vendorListToUpdate = decision2.getRecords(),AccessLevel.System_mode);
     }
   }
 

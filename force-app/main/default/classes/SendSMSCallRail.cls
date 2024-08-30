@@ -1,5 +1,6 @@
 public class SendSMSCallRail {
 	public static HttpResponse sendSms(String customer_phone_number,String content,String userPhone) {
+        System.debug('send sms');
         List<CallRail_Configuration__mdt> callRailConf = CallRail_Configuration__mdt.getall().values();
         List<CadenceConfiguration__mdt> cadenceConf = CadenceConfiguration__mdt.getall().values();
         String tokenParam=cadenceConf[0].tokenParamValue__c;

@@ -33,7 +33,6 @@ public with sharing class Lmr_SmrtPhone_cls {
         WHERE ID = :UserInfo.getUserId()
         WITH USER_MODE
       ];
-      System.debug('dialpad 2');
 
       Organization myOrg = [SELECT Name FROM Organization WITH USER_MODE LIMIT 1];
 
@@ -319,9 +318,6 @@ public with sharing class Lmr_SmrtPhone_cls {
         );
       }
 
-      //if(Opportunity?.Address_1__c != Null && messagebody.contains('{!Opportunity.Address_1__c}') && objectUsed =='Opportunity'){messagebody= messagebody.replace('{!Opportunity.Address_1__c}', opportunity.Address_1__c);}
-
-      //if(Opportunity?.Appointment_Date_Time__c != Null && messagebody.contains('{!Opportunity.Appointment_Date_Time__c}') && objectUsed =='Opportunity'){messagebody= messagebody.replace('{!Opportunity.Appointment_Date_Time__c}', ''+opportunity.Appointment_Date_Time__c.date());}
 
       if (messagebody.contains('&#39;')) { messagebody = messagebody.replace('&#39;', '\'');
       }
@@ -329,9 +325,7 @@ public with sharing class Lmr_SmrtPhone_cls {
       if (messagebody.contains('&#39')) { messagebody = messagebody.replace('&#39', '\'');
       }
       error += 'line 114';
-      system.debug(
-        '---------------------------- START Building message now--------------------------'
-      );
+
 
       error += 'messagebody: ' + messagebody;
       String msgBody = messagebody;
@@ -381,10 +375,7 @@ public with sharing class Lmr_SmrtPhone_cls {
         recordId
       );
       error += messagebody;
-      system.debug(
-        '---------------------------- END Building message now--------------------------' +
-        messagebody
-      );
+
       error += 'line 118';
       messagebody = messagebody.replaceAll('\\{.*?\\}', '');
 

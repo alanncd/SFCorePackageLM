@@ -6,6 +6,7 @@ public with sharing class BatchCalloutCadenceSMS implements Database.Batchable<S
     }
 
     public Database.QueryLocator start(Database.BatchableContext BC) {
+        System.debug('start');
         String sQuery = 'SELECT Id,TargetId__c,IdTemplate__c FROM ScheduleCadence__c WHERE Id IN :setSMSIds';
         return Database.getQueryLocator(sQuery);
     }

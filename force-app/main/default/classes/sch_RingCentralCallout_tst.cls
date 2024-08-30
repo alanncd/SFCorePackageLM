@@ -1,7 +1,6 @@
 @istest
 public class sch_RingCentralCallout_tst {
     @testSetup static void setup() {
-    //  insert new Ring_Central_API_Setting__c(authUrl__c='https://platform.ringcentral.com/restapi/', username__c='TestSecret', password__c='Test pwd', secretKey__c='Test Token' ,apiKey__c='apikey' );         
     List<Ring_Central_Configuration__mdt> apiSettingRingCentral = [
         SELECT apiKey__c, authUrl__c, Authentication_Method__c, authUrl2__c, Password__c, secretKey__c, username__c, JWT__c, Url_Call_Logs__c, Url_Message_Store__c
         FROM Ring_Central_Configuration__mdt
@@ -35,10 +34,8 @@ public class sch_RingCentralCallout_tst {
         	sch_RingCentralCallout.endpoint1=urlCallLogs;
         	sch_RingCentralCallout.endpoint2=urlReadMessages;
 			sch_RingCentralCallout.getRingCentralLogs();
-        //--
          	System.schedule('CentralringScheduler_test1',  '0 00 * * * ?', new sch_RingCentralCallout());
         	system.assertEquals(null, null);
-        //--
 	    Test.stopTest();
     }    
       
@@ -107,6 +104,7 @@ public class sch_RingCentralCallout_tst {
 		'    }'+
 		'  } '+
 		'}';
+        
         return jsonr;
     }
     public static String jsonReadMessages(){

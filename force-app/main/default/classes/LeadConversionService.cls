@@ -445,18 +445,15 @@ LeftMain_SecurityUtils.checkUpdate( Account.SObjectType,new List<String> {
             }
 
             if (!deleteProspectList.isEmpty() &&  deleteProspectList.getSObjectType().getDescribe().isDeletable() ) {
-                Database.delete(deleteProspectList, AccessLevel.User_mode);
-                //delete deleteProspectList;
+                Database.delete(deleteProspectList, AccessLevel.System_mode);
             }
             if(!updateLeadList.isEmpty()){
                 SObjectAccessDecision decision1 = Security.stripInaccessible(AccessType.UPDATABLE, updateLeadList);
-                update decision1.getRecords(); 
-                //update updateLeadList;
+                update decision1.getRecords();
             }
             if(!insertCampaignList.isEmpty()){
 				SObjectAccessDecision decision = Security.stripInaccessible(AccessType.CREATABLE, insertCampaignList);
-                insert decision.getRecords(); 
-                //insert insertCampaignList;
+                insert decision.getRecords();
             }
         }
     }

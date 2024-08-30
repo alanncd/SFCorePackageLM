@@ -1,6 +1,7 @@
 public with sharing class QuickBooksSchedulerTwo {
   @InvocableMethod(label='Schedule QuickBooks Job')
   public static List<Boolean> scheduleQuickBooksJob() {
+      System.debug('test');
     List<QuickBooks_Config__mdt> quickbookSchedule = [
       SELECT Id, Schedule_Quickbook__c
       FROM QuickBooks_Config__mdt

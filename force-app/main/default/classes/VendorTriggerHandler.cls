@@ -1,6 +1,7 @@
 public with sharing class VendorTriggerHandler {
     
     public static void updateVendor(List<Vendor__c> newVendorList, Map<Id, Vendor__c> oldVendorMap, Boolean isUpdate) {
+        System.debug('updateVendor');
         LeftMain_SecurityUtils.checkRead(Vendor__c.SObjectType,new List<String> {
             'Id',
                 'Duration__c',
@@ -46,18 +47,7 @@ public with sharing class VendorTriggerHandler {
         if(TransactionsRelatedLeadSourceValueSet.size() > 0 && !TransactionsRelatedLeadSourceValueSet.isEmpty()){
             leadSourceValueSet.addAll(TransactionsRelatedLeadSourceValueSet);
         }
-		for(Vendor__c vendor : newVendorList) {  
-            //Compare LEAD SOURCE & Vendor Name
-            /*if(!leadSourceValueSet.isEmpty() ){ 
-                for( String leadSourceName: leadSourceValueSet){
-                    system.debug('New VENDOR value '+ vendor.Vendor_Lead_Source__c);
-                    system.debug('New leadSourceName assigned '+ leadSourceName);
-                    if(leadSourceName.toLowerCase().containsIgnoreCase(vendor.Name.toLowerCase())){  
-                        vendor.Vendor_Lead_Source__c = leadSourceName;   
-                        break; 
-                    } 
-                }
-            }*/
+		for(Vendor__c vendor : newVendorList) {
             String vendorName = String.isNotBlank(vendor.Vendor_Lead_Source__c) ? vendor.Vendor_Lead_Source__c.toLowerCase() : vendor.Name.toLowerCase();
             if((!(isUpdate) && vendor.Duration__c != NULL )|| (oldVendorMap != NULL && oldVendorMap.containsKey(vendor.Id) && oldVendorMap.get(vendor.Id).get('Duration__c') != vendor.Duration__c)) {
                 vendorsSet.add(vendorName);
@@ -75,16 +65,11 @@ public with sharing class VendorTriggerHandler {
             Map<String,String> mapOfLastMonthAmountMap = ExpenseTriggerHandler.getAggregatedAmountOfVendors('LastMonth',vendorsIdSet);
             Map<String,String> mapOfAllTimeAmountMap = ExpenseTriggerHandler.getAggregatedAmountOfVendors('AllTime',vendorsIdSet);
             
-            system.debug('--------------mapOfYearlyAmountMap'+mapOfYearlyAmountMap);
-            system.debug('--------------mapOfMonthlyAmountMap'+mapOfMonthlyAmountMap);
             
             Map<String, List<AggregateResult>> leadsMap = getGroupedRecords(fetchRecords('','Lead', 'LeadSource', vendorsSet));
             Map<String, List<AggregateResult>> opportunityMap = getGroupedRecords(fetchRecords('','Opportunity', 'LeadSource', vendorsSet));
             Map<String, List<AggregateResult>> transactionMap = getGroupedRecords(fetchRecords('Sum_ProjectedAndFlipProfit__c','Transactions__c', 'Lead_Source__c', vendorsSet)); //Project_Wholesale_Profit__c
             
-            System.debug('leadsMap : '+leadsMap);
-            System.debug('opportunityMap : '+opportunityMap);
-            System.debug('transactionMap : '+transactionMap);
             
             for(Vendor__c vendor : updateVendorList) {
                 String vendorName = String.isNotBlank(vendor.Vendor_Lead_Source__c) ? vendor.Vendor_Lead_Source__c.toLowerCase() : vendor.Name.toLowerCase();
@@ -96,19 +81,16 @@ public with sharing class VendorTriggerHandler {
                 // find Lead, Opportunities and Transactions Count
                 if(vendor.Duration__c == 'Monthly') {
                     
-                    // ======= Monthly Leads Count ============= //
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getMonthlyRecordCount(leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     } 
                     
-                    // ======= Monthly Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getMonthlyRecordCount(opportunityMap.get(vendorName), false);
                         vendor.Opportunities__c = record.count;
                     }
                     
-                    // ======= Monthly Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getMonthlyRecordCount(transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
@@ -118,19 +100,16 @@ public with sharing class VendorTriggerHandler {
                     vendor.Total_Cost_Duration__c = mapOfMonthlyAmountMap.get(String.valueOf(vendor.Id)) != null ? Decimal.valueOf(mapOfMonthlyAmountMap.get(String.valueOf(vendor.Id))) : 0;
                 } else if(vendor.Duration__c == 'Quarterly') {
                     
-                    // ======= Quarterly Leads Count ============= //
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getQuarterlyRecordCount(currentQuarter.Number, leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     } 
                     
-                    // ======= Quarterly Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getQuarterlyRecordCount(currentQuarter.Number, opportunityMap.get(vendorName), false);
                         vendor.Opportunities__c = record.count;
                     } 
                     
-                    // ======= Quarterly Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getQuarterlyRecordCount(currentQuarter.Number, transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
@@ -140,19 +119,16 @@ public with sharing class VendorTriggerHandler {
 					vendor.Total_Cost_Duration__c = mapOfQuaterlyAmountMap.get(String.valueOf(vendor.Id)) != null ? Decimal.valueOf(mapOfQuaterlyAmountMap.get(String.valueOf(vendor.Id))) : 0;                    
                 } else if(vendor.Duration__c == 'Yearly') {
                     
-                    // ======= Yearly Leads Count ============= //
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getYearlyRecordCount(leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     }
                     
-                    // ======= Yearly Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getYearlyRecordCount(opportunityMap.get(vendorName), false);  
                         vendor.Opportunities__c = record.count;    
                     }
                     
-                    // ======= Yearly Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getYearlyRecordCount(transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
@@ -161,20 +137,16 @@ public with sharing class VendorTriggerHandler {
                     }
 					vendor.Total_Cost_Duration__c = mapOfYearlyAmountMap.get(String.valueOf(vendor.Id)) != null ? Decimal.valueOf(mapOfYearlyAmountMap.get(String.valueOf(vendor.Id))) : 0;                    
                 }else if(vendor.Duration__c == 'Last Year'){
-                    //Last Year
                     vendor.Total_Cost_Duration__c = mapOfLastYearAmountMap.get(String.valueOf(vendor.Id)) != null ? Decimal.valueOf(mapOfLastYearAmountMap.get(String.valueOf(vendor.Id))) : 0;                    
-					  // ======= Yearly Leads Count ============= //
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastYearRecordCount(leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     }          
-                    // ======= Yearly Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastYearRecordCount(opportunityMap.get(vendorName), false);  
                         vendor.Opportunities__c = record.count;    
                     }
                     
-                    // ======= Yearly Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastYearRecordCount(transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
@@ -183,43 +155,37 @@ public with sharing class VendorTriggerHandler {
                     }
                 } 
                 else if(vendor.Duration__c == 'Last Quarter'){
-                     // Last Quarter
-                      // ======= Last Quarterly Leads Count ============= //
+
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastQuarterRecordCount(currentQuarter.Number, leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     } 
                     
-                    // ======= Last Quarterly Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastQuarterRecordCount(currentQuarter.Number, opportunityMap.get(vendorName), false);
                         vendor.Opportunities__c = record.count;
                     } 
                     
-                    // ======= Last Quarterly Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastQuarterRecordCount(currentQuarter.Number, transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
                         if(record.count > 0)
-                            vendor.Total_Project_Profit__c = record.profit;// / record.count;
+                            vendor.Total_Project_Profit__c = record.profit;
                     } 
                     vendor.Total_Cost_Duration__c = mapOfLastQuaterAmountMap.get(String.valueOf(vendor.Id)) != null ? Decimal.valueOf(mapOfLastQuaterAmountMap.get(String.valueOf(vendor.Id))) : 0;                    
                 }
                 else if(vendor.Duration__c == 'Last Month'){
                      // Last Month
-                      // ======= Last Month Leads Count ============= //
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastMonthRecordCount(leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     } 
                     
-                    // ======= Last Month Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastMonthRecordCount(opportunityMap.get(vendorName), false);
                         vendor.Opportunities__c = record.count;
                     } 
                     
-                    // ======= Last Month Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getLastMonthRecordCount(transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
@@ -231,24 +197,21 @@ public with sharing class VendorTriggerHandler {
                 else if(vendor.Duration__c == 'All Time'){
                     system.debug('vendor.Duration__cvendor.Duration__c'+vendor.Duration__c);
                      // All Time
-                      // ======= All Time Leads Count ============= //
                     if(leadsMap.containsKey(vendorName)) {
                         RecordWrapper record = getAlTimeRecordCount(leadsMap.get(vendorName), false);
                         vendor.Leads__c = record.count;
                     } 
                     
-                    // ======= All Time Opportunities Count ============= //
                     if(opportunityMap.containsKey(vendorName)) {
                         RecordWrapper record = getAlTimeRecordCount(opportunityMap.get(vendorName), false);
                         vendor.Opportunities__c = record.count;
                     } 
                     	
-                    // ======= All Time Transactions Count ============= //
                     if(transactionMap.containsKey(vendorName)) {
                         RecordWrapper record = getAlTimeRecordCount(transactionMap.get(vendorName), true);
                         vendor.Transactions__c = record.count;
                         if(record.count > 0)
-                            vendor.Total_Project_Profit__c = record.profit;// / record.count;
+                            vendor.Total_Project_Profit__c = record.profit;
                     } 
                     vendor.Total_Cost_Duration__c = mapOfAllTimeAmountMap.get(String.valueOf(vendor.Id)) != null ? Decimal.valueOf(mapOfAllTimeAmountMap.get(String.valueOf(vendor.Id))) : 0;                    
                 }                
@@ -270,14 +233,12 @@ public with sharing class VendorTriggerHandler {
                 if(VendorDynamicFields__c.getOrgDefaults().LeadCreatedDate__c<>NULL){CreatedDateField=VendorDynamicFields__c.getOrgDefaults().LeadCreatedDate__c;}
 	        }
          }
-		system.debug('fetchRecords'+CreatedDateField);
 
         String query = 'SELECT Count(ID) ct, CALENDAR_YEAR('+CreatedDateField+') cy, CALENDAR_MONTH('+CreatedDateField+') cm, '+leadSource+' ls,CALENDAR_QUARTER('+CreatedDateField+') cq';
         if(String.isNotBlank(profitField)) {
             query = query + ', SUM('+profitField+') pr';
         } 
         List<AggregateResult> recordList = Database.query(string.escapeSingleQuotes(query+' FROM '+objectName+' WHERE '+leadSource+' IN : vendorNames GROUP BY '+leadSource+', CALENDAR_YEAR('+CreatedDateField+'), CALENDAR_MONTH('+CreatedDateField+'), CALENDAR_QUARTER('+CreatedDateField+') LIMIT 50000'));
-		system.debug('List Records Found'+recordList);
         return recordList;
     }
     
@@ -351,7 +312,7 @@ public with sharing class VendorTriggerHandler {
         }
         return record;
     }    
-    // This method will get Last month record count for Transaction-----------------22/6/22
+    // This method will get Last month record count for Transaction 22/6/22
     public static RecordWrapper getLastMonthRecordCount(List<AggregateResult> aggregateList, Boolean getProfit) {
         Integer lastMonth=System.today().month();
         Integer yearTosearch=System.today().year();

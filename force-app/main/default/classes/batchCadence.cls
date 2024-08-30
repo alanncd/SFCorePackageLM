@@ -18,6 +18,7 @@ global with sharing class batchCadence implements Database.Batchable<sObject>, D
 
     global Database.QueryLocator start(Database.BatchableContext BC)
         {
+            System.debug('start');
             DateTime currentTime = System.now();
             String query = 'Select Id, IdTemplate__c,TargetId__c,Name_Owner__c,Lead__c,OwnerId,Name,Status__c,Frecuency_To_Flow__c,StatusCode__c,BodyResponse__c FROM ScheduleCadence__c Where Time_to_be_dispatched__c <=: currentTime AND Status__c = \'Pending\' ORDER BY CreatedDate ASC LIMIT 100';
             return Database.getQueryLocator(query);

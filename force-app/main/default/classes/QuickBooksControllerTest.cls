@@ -1,23 +1,36 @@
 @isTest
 public with sharing class QuickBooksControllerTest implements HttpCalloutMock {
     
+    @testsetup
+    static void testSetup(){
+        System.debug('test');
+        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User']; 
+        List<User> uu = new List<User>();
+        while (uu.size() < 1) {
+          Blob b = Crypto.GenerateAESKey(128);
+          String h = EncodingUtil.ConvertTohex(b);
+          String uid = h.SubString(0,8);
+      		User u = new User(Alias = uid, Email= 'letfmain@testdomain.com', 
+          EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
+          LocaleSidKey='en_US', ProfileId = p.Id, 
+          TimeZoneSidKey='America/New_York', UserName= uid + '@testdomain.com');      
+      	uu.add(u);
+    }
+    insert uu;
+        List<PermissionSetAssignment> listPermissionSet = New List<PermissionSetAssignment>();
+        PermissionSet ps = [SELECT Id FROM PermissionSet WHERE Label = 'Left Main User'];
+        for(User u:uu){
+            listPermissionSet.add(new PermissionSetAssignment(AssigneeId = u.Id, PermissionSetId = ps.Id)); 
+        }
+
+        insert listPermissionSet;
+    }
     public static testmethod void testGetVendorsAndExpenses(){
 
-        User thisUser = [SELECT Id FROM User WHERE Id = :UserInfo.getUserId()];
+        User thisUser = [SELECT Id FROM User WHERE email ='letfmain@testdomain.com'];
         System.runAs(thisUser){
-        try{
-        
-        // Create a unique UserName
-        String uniqueUserName = 'standarduser' + DateTime.now().getTime() + '@testorg.com';
-        // This code runs as the system user
-        Profile p = [SELECT Id FROM Profile WHERE Name='System Administrator'];
-        User u = new User(Alias = 'standt', Email='standarduser@testorg.com',
-        EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US',
-        LocaleSidKey='en_US', ProfileId = p.Id,
-        TimeZoneSidKey='America/Los_Angeles',
-         UserName=uniqueUserName);
 
-        System.runAs(u) {
+        
         // The following code runs as user 'u'
         Vendor__c vndrObj = new Vendor__c();
         vndrObj.name = 'test';
@@ -42,10 +55,8 @@ public with sharing class QuickBooksControllerTest implements HttpCalloutMock {
         Test.setMock(HttpCalloutMock.class, mock);
         System.assertEquals('200', QuickBooksController.getVendorsAndExpenses('-30'),'');
         Test.stopTest();
-            }
- }catch(exception e){
-                
-            }
+            
+
         }
     }
     
@@ -108,6 +119,8 @@ public with sharing class QuickBooksControllerTest implements HttpCalloutMock {
     }
     
     public static testmethod void testqueryLastQuarter(){
+       User thisUser = [SELECT Id FROM User WHERE email ='letfmain@testdomain.com'];
+        System.runAs(thisUser){
        Test.startTest();
 
     // Call the method to be tested
@@ -122,5 +135,5 @@ public with sharing class QuickBooksControllerTest implements HttpCalloutMock {
     Test.stopTest();
     }
     
-    
+    }
 }

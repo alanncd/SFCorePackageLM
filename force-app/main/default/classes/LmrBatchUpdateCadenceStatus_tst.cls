@@ -2,7 +2,7 @@
 public class LmrBatchUpdateCadenceStatus_tst {
 
     @testSetup static void setupmethod() {
-    
+    	System.debug('setup');
          SObject o = mock('Lead');
         insert o;
         

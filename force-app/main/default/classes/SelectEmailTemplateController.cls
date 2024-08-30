@@ -51,12 +51,7 @@ public with sharing class SelectEmailTemplateController {
             if(!upsertList.isEmpty()){
                  // Filtrar registros que tienen acceso de creación
 
-                 if (Schema.sObjectType.Lead_Follow_Up_Sequence__c.isCreateable() ||
-                 Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Id__c.isCreateable() ||
-                Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Name__c.isCreateable() || 
-                 Schema.sObjectType.Lead_Follow_Up_Sequence__c.isUpdateable() ||
-                Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Id__c.isUpdateable() ||
-                Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Name__c.isUpdateable() ) { 
+                 if (Schema.sObjectType.Lead_Follow_Up_Sequence__c.isCreateable() ||                 Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Id__c.isCreateable() ||                Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Name__c.isCreateable() ||                  Schema.sObjectType.Lead_Follow_Up_Sequence__c.isUpdateable() ||                Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Id__c.isUpdateable() ||                Schema.sObjectType.Lead_Follow_Up_Sequence__c.fields.Email_Template_Name__c.isUpdateable() ) { 
                   // Filter records with CREATABLE access
                   SObjectAccessDecision decision = Security.stripInaccessible(AccessType.CREATABLE, upsertList);
 

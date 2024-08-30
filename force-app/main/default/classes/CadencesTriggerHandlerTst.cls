@@ -2,6 +2,7 @@
 public class CadencesTriggerHandlerTst {
     
      static User setupTestUser(String profileName){
+         System.debug('test setup');
         String uniqueness = DateTime.now()+':'+Math.random();
         try{ 
             throw new NullPointerException();

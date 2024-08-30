@@ -13,9 +13,8 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
 
     @future(callout=true) 
     public static void getRingCentralLogs() {  
-        //==================Get TOKEN==================
+
         String accessToken=getToken();
-		//==================Get Times FROM & TO==================
 		Datetime localgmt=Datetime.now();
 		Datetime formattedDT = Datetime.newInstance(localgmt.year(), localgmt.month(), localgmt.day(), localgmt.hour(), localgmt.minute(), localgmt.second());        
 		String datetoParam=formattedDT.formatGmt('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');  
@@ -23,23 +22,18 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
 		Datetime timeFrom =localgmt.addHours(-10);
         Datetime formattedDTFrom = Datetime.newInstance(timeFrom.year(), timeFrom.month(), timeFrom.day(), timeFrom.hour(), timeFrom.minute(), timeFrom.second());              
 		String datefromParam=formattedDTFrom.formatGmt('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''); 
-		//==================Get CurrentRCDataStore==================
         List<RingCentral_Data_Store2__c> rcdList = new list<RingCentral_Data_Store2__c>();
     	Map<string,RingCentral_Data_Store2__c> rcdValues = getCurrentRCDataStore();
         Map<string,RingCentral_Data_Store2__c> rcdValuesByExtId = getCurrentRCDataStoreByExtId();
-        //==================Get EndPoints==================
         String endpointCalls=authUrlCallLogs+'?view=Simple&showBlocked=false&withRecording=false&dateFrom='+datefromParam+'&totalPages=100&perPage=100000&dateTo='+datetoParam;
         String endpointMessages=authUrlMessageStore+'?availability=Alive&dateFrom='+datefromParam;
         if(Test.isRunningTest()) {
             endpointCalls = endpoint1;
             endpointMessages = endpoint2;
         }
-    	//Call WS CallLog of today, with missing calls of the extension (central ring extension is the identifiant of the user in central ring) of the current user	
 		HttpResponse res1 = getCallOut(accessToken, 'GET', endpointCalls);
-    	//Call Rest API Read Messages
 		HttpResponse res2 = getCallOut(accessToken, 'GET', endpointMessages);        
         if (res2.getStatusCode() == 200) {
-			//==================Get Read Messages Logic==================
             Map<String, Object> resMsg = (Map<String, Object>)JSON.deserializeUntyped(res2.getBody());
             String json1 = res2.getBody().replace('"from" :', '"from1" :');  //Avoid Reserved Word
             uriWrapper  lstRecords= (uriWrapper) System.JSON.deserialize(json1, uriWrapper.class);
@@ -99,22 +93,16 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
 		if (res1.getStatusCode() != 200) {
 			System.debug('The status code returned was not expected: ' + res1.getStatusCode() + ' ' + res1.getStatus());
 		} else {
-    	    ///////---LOGIC CALL LOGS
 			Map<String, Object> results = (Map<String, Object>)JSON.deserializeUntyped(res1.getBody());
 			List<Object> callrecords = (List<Object>)results.get('records');
 	    	Integer Missed=0;
-    		///looping through the calls from ringCentral
     		for(Object inidividualRecords : callrecords){
         
-	           //store miss calls in this map objects , 
     	        Map<String,Object> uriv = (Map<String,Object> )inidividualRecords;
-	    	    //system.debug('uriv----'+uriv);
 		        if(uriv.get('direction').equals('Inbound') )  {
             		Missed=Missed+1;
 	            	Map<String, Object> resultsfrom = (Map<String, Object>)uriv.get('from');
-	            	System.debug('Caller Name  = ' + resultsfrom.get('name'));
-	            	System.debug('Caller PhoneNumber = ' + resultsfrom.get('phoneNumber'));
-	                
+
     		        Map<String, Object> resultsto = (Map<String, Object>)uriv.get('to');
 					if(rcdValues.get(uriv.get('startTime').toString())==null){ //If no exist the get, try to insert...
 						string fromPhoneNumber;
@@ -148,7 +136,6 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
         				});            
                 		RCDS.name = fromPhoneNumber;
                 		RCDS.Raw_Time_Filter__c = uriv.get('startTime').toString();
-                		system.debug('raw time filter==============>'+RCDS.Raw_Time_Filter__c) ;
                 		RCDS.From_Number__c = fromPhoneNumber;
                 		RCDS.To_Number__c = resultsto.get('phoneNumber').toString();
                 		RCDS.Caller_Phone_Number__c=string.valueof( fromPhoneNumber );
@@ -165,7 +152,6 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
             if(rcdList.size()>0){
                 SObjectAccessDecision decision = Security.stripInaccessible(AccessType.CREATABLE, rcdList);
             	insert decision.getRecords(); 
-                //insert rcdList;
             }
 		}    
 	}
@@ -188,7 +174,7 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
 
         String accessToken = '';
 
-        // Get the Access Token to get the call log
+        //Get the Access Token to get the call log
         Http http = new Http();
         HttpRequest request = new HttpRequest();
         
@@ -215,11 +201,8 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
         } else if (typeOfAuthentication == 'JWT') {
           String credentials = apiKey + ':' + secretKey;
           Blob headerValue = Blob.valueOf(credentials);
-          authorizationHeader =
-            'Basic ' + EncodingUtil.base64Encode(headerValue);
-          requestBody =
-            'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' +
-            EncodingUtil.urlEncode(JWT, 'UTF-8');
+          authorizationHeader ='Basic ' + EncodingUtil.base64Encode(headerValue);
+          requestBody ='grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' +EncodingUtil.urlEncode(JWT, 'UTF-8');
         }
 
         request.setHeader(tokenParam, authorizationHeader);
@@ -228,8 +211,6 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
 
         HttpResponse response = http.send(request);
 
-		System.debug('httprequest1'+request)    ;
-    	// Parse the JSON response
 		if (response.getStatusCode() != 200) {
 			System.debug('The status code returned was not expected: ' + response.getStatusCode() + ' ' + response.getStatus()+response.getBody());
             return '';
@@ -257,7 +238,6 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
         map<string,RingCentral_Data_Store2__c> rcdValues = new map<string,RingCentral_Data_Store2__c>();
         list<RingCentral_Data_Store2__c> oldrcd = [select id,From_Number__c,To_Number__c,Raw_Time_Filter__c,Caller_Phone_Number__c,Formatted_Date__c,To_Phone_Number__c 
                                                FROM RingCentral_Data_Store2__c WHERE CreatedDate =THIS_WEEK WITH USER_MODE];
-    	system.debug('1 - The size is : '+oldrcd.size());
     	for(RingCentral_Data_Store2__c rcdss :oldrcd){rcdValues.put(rcdss.Raw_Time_Filter__c,rcdss);
     		}
         return rcdValues;
@@ -266,7 +246,6 @@ global with sharing class sch_RingCentralCallout implements Schedulable, Databas
         map<string,RingCentral_Data_Store2__c> rcdValues = new map<string,RingCentral_Data_Store2__c>();
         list<RingCentral_Data_Store2__c> oldrcd = [Select id,ExternalId__c,From_Number__c,To_Number__c,Raw_Time_Filter__c,Caller_Phone_Number__c,Formatted_Date__c,To_Phone_Number__c 
                                                FROM RingCentral_Data_Store2__c WHERE CreatedDate =THIS_WEEK WITH USER_MODE];
-    	system.debug('2 - The size is : '+oldrcd.size());
     	for(RingCentral_Data_Store2__c rcdss :oldrcd){rcdValues.put(rcdss.ExternalId__c,rcdss);
     		}
         return rcdValues;

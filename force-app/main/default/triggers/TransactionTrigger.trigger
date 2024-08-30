@@ -6,7 +6,8 @@ trigger TransactionTrigger on Transactions__c (after insert,after update) {
             TransactionTriggerHelper.upsertTransactionRecordMethod(Trigger.new);
         }
     }
-    //Check from custom setting that trigger is on or not for Twnsqr.
+    //Deprecated Code - Twnsqr
+    /*
     List<Twnsqr_Config__c> lstConfig = [Select Id, Sync__c From Twnsqr_Config__c LIMIT 10000];
     if(lstConfig.size()>0){
     if(lstConfig[0].Sync__c) {
@@ -17,4 +18,6 @@ trigger TransactionTrigger on Transactions__c (after insert,after update) {
             TransactionTriggerHelper.twnsqrAction(Trigger.new,null);
         }        
     }    }
+
+*/
 }

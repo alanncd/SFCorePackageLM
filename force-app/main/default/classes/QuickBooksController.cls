@@ -5,7 +5,9 @@ public with sharing class QuickBooksController implements Schedulable {
   public static String accountName = QuickBooksMTDT.Account_Name__c;
 
   // Get quick book detail from metadata
+ 
   private static QuickBooks_Config__mdt FetchQuickBookDetail() {
+       System.debug('test');
     LeftMain_SecurityUtils.checkRead(
       QuickBooks_Config__mdt.SObjectType,
       new List<String>{
@@ -88,9 +90,7 @@ public with sharing class QuickBooksController implements Schedulable {
     } else {
       accountNameList = new List<String>();
     }
-    // if (days == 'CurrentQuarter') {
-    //   days = currentQuarterQuery();
-    // }
+
     PurchaseWrapper purchaseWrapObj = getPurchase(days);
 
     if (
@@ -101,9 +101,6 @@ public with sharing class QuickBooksController implements Schedulable {
       LeftMain_SecurityUtils.checkObjectIsReadable(Vendor__c.SObjectType);
       LeftMain_SecurityUtils.checkObjectIsInsertable(Vendor__c.SObjectType);
       LeftMain_SecurityUtils.checkObjectIsUpdateable(Vendor__c.SObjectType);
-      system.debug(
-        'QueryResponse.Purchase::::' + purchaseWrapObj.QueryResponse.Purchase
-      );
         
 
       Map<String, Vendor__c> vendorsMaptoInsert = fetchVendors(
@@ -115,10 +112,7 @@ public with sharing class QuickBooksController implements Schedulable {
       for (Vendor__c vendorObj : vendorsMaptoInsert.values()) {
         newVendorIdSet.add(vendorObj.ID__c);
       }
-      system.debug(
-        'vendorsMaptoInsert.values().size()::::' +
-        vendorsMaptoInsert.values().size()
-      );
+
       if (vendorsMaptoInsert.values().size() > 0) {
         try {
           Map<String, String> vendorsUNIqueMap = new Map<String, String>();
