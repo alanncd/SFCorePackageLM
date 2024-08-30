@@ -7,7 +7,6 @@ public with sharing class QuickBooksController implements Schedulable {
   // Get quick book detail from metadata
  
   private static QuickBooks_Config__mdt FetchQuickBookDetail() {
-       System.debug('test');
     LeftMain_SecurityUtils.checkRead(
       QuickBooks_Config__mdt.SObjectType,
       new List<String>{
@@ -131,7 +130,6 @@ public with sharing class QuickBooksController implements Schedulable {
           }
 
           for (Vendor__c vendorObj : vendorsMaptoInsert.values()) {
-            system.debug('vendorsMaptoInsert.values():::' + vendorObj);
             if (!vendorsUNIqueMap.containsKey(vendorObj.Id__c)) {
               vendorsUniqueMaptoInsert.put(vendorObj.Id__c, vendorObj);
             }
@@ -140,7 +138,7 @@ public with sharing class QuickBooksController implements Schedulable {
             List<Vendor__c> newListVenders = new List<Vendor__c>();
 
             SObjectAccessDecision decision1 = Security.stripInaccessible(AccessType.CREATABLE, vendorsUniqueMaptoInsert.values());
-            Database.upsert(newListVenders = decision1.getRecords(),Vendor__c.ID__c);
+            Database.upsert(newListVenders = decision1.getRecords(),Vendor__c.ID__c,AccessLevel.System_mode);
 
           }
 
@@ -284,9 +282,8 @@ public with sharing class QuickBooksController implements Schedulable {
       for (PurchaseWrapper.Purchase purchase : PurchaseList) {
         if (purchase.Line != null) {
           for (PurchaseWrapper.Line purchaseLine : purchase.Line) {
-            // if(purchaseLine.AccountBasedExpenseLineDetail != NULL && accountNameList.contains(purchaseLine.AccountBasedExpenseLineDetail.AccountRef.name)){
             newexpensesList.add(purchase);
-            // }
+
           }
         }
       }
@@ -371,7 +368,7 @@ public with sharing class QuickBooksController implements Schedulable {
       for (PurchaseWrapper.Purchase purchase : expenses) {
           
         if (String.isNotBlank(purchase.Id)) {
-          //&& expenseExistingParentMap.containsKey(purchase.Id)
+
           Expense__c expense = new Expense__c();
           expense.Id__c = purchase.Id;
           expense.Date__c = purchase.TxnDate != null ? purchase.TxnDate : null;
@@ -426,7 +423,7 @@ public with sharing class QuickBooksController implements Schedulable {
         listExpenses.addAll(expenseMap.values());
 
         SObjectAccessDecision decision2 = Security.stripInaccessible(AccessType.CREATABLE, listExpenses);
-        Database.upsert(listExpenses = decision2.getRecords(),Expense__c.Id__c);
+        Database.upsert(listExpenses = decision2.getRecords(),Expense__c.Id__c,AccessLevel.System_mode);
 
         //upsert expenseMap.values() Id__c;
         
